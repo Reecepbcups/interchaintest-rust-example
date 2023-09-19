@@ -715,6 +715,7 @@ checksum = "1a9bad9f94746442c783ca431b22403b519cd7fbeed0533fdd6328b2f2212128"
 [[package]]
 name = "localic-std"
 version = "0.0.1"
+source = "git+https://github.com/strangelove-ventures/interchaintest?branch=reece/rust#4a1611c8c98873a5d4719ed6ab94dccf8788ac18"
 dependencies = [
  "cosmwasm-std",
  "reqwest",
