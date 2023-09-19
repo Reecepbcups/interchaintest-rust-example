@@ -74,7 +74,7 @@ jobs:
         run: make compile
 
       - name: Start background ibc local-interchain        
-        run: /tmp/local-ic start juno_ibc --api-port 8080 &
+        run: ICTEST_HOME=./interchaintest /tmp/local-ic start juno --api-port 8080 &
       
       - name: Run Rust E2E Script
         run: make run-test
