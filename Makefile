@@ -12,27 +12,11 @@ compile:
 	--mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
 	cosmwasm/rust-optimizer:0.12.13
 
+run-test:
+	cd interchaintest && cargo run --package interchaintest-e2e --bin interchaintest-e2e
+
 all:
 	cargo schema	
 	cargo fmt
 	cargo test
 	cargo clippy -- -D warnings
-
-clippy-pedantic:	
-	cargo clippy -- -W clippy::pedantic -W clippy::missing-errors-doc -W clippy::doc-markdown -W clippy::module-name-repetitions
-clippy-format:	
-	cargo clippy -- -W clippy::useless_format
-clippy-correctness:	
-	cargo clippy -- -W clippy::correctness
-clippy-suspicious:	
-	cargo clippy -- -W clippy::suspicious
-clippy-style:	
-	cargo clippy -- -W clippy::style
-clippy-perf:	
-	cargo clippy -- -W clippy::perf
-clippy-complexity:	
-	cargo clippy -- -W clippy::complexity
-clippy-new:	
-	cargo clippy -- -W clippy::nursery	
-
-# -W clippy::missing-errors-doc
