@@ -13,7 +13,7 @@ compile:
 	cosmwasm/rust-optimizer:0.12.13
 
 run-test:
-	cargo run --package interchaintest-e2e --bin interchaintest-e2e
+	cd interchaintest && cargo run --package interchaintest-e2e --bin interchaintest-e2e
 
 all:
 	cargo schema	
