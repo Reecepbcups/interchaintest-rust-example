@@ -1,29 +1,25 @@
-use cosmwasm_std::Coin;
-use cosmwasm_std::Uint128;
 use localic_std::cosmwasm::CosmWasm;
 use reqwest::blocking::Client;
 use serde_json::json;
 
-use localic_std::balances::*;
-use localic_std::bank::*;
 use localic_std::polling::*;
 use localic_std::transactions::*;
 
 const API_URL: &str = "http://127.0.0.1:8080";
 
+// ICTEST_HOME=./interchaintest local-ic start juno --api-port 8080
 fn main() {    
     let client = Client::new();
     poll_for_start(client.clone(), &API_URL, 150);
 
-    let rb: ChainRequestBuilder = ChainRequestBuilder::new(API_URL.to_string(), "localjuno-1".to_string(), true, false);
+    let rb: ChainRequestBuilder = ChainRequestBuilder::new(API_URL.to_string(), "localjuno-1".to_string(), true);
 
     test_cosmwasm(&rb);
 }
 
 fn test_cosmwasm(rb: &ChainRequestBuilder) {
     let cw = CosmWasm::new(&rb);
-
-    // sudo chmod -R +rwx artifacts/
+    
     let file_path = get_contract_path().join("ictest_rust.wasm");    
     let code_id = cw.store_contract("acc0", file_path);    
     if code_id.is_err() {        
