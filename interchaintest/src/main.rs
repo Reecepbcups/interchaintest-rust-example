@@ -19,8 +19,7 @@ fn main() {
 
 fn test_cosmwasm(rb: &ChainRequestBuilder) {
     let cw = CosmWasm::new(&rb);
-
-    // sudo chmod -R +rwx artifacts/
+    
     let file_path = get_contract_path().join("ictest_rust.wasm");    
     let code_id = cw.store_contract("acc0", file_path);    
     if code_id.is_err() {        
