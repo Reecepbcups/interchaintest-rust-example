@@ -1,4 +1,4 @@
-use localic_std::cosmwasm::CosmWasm;
+use localic_std::modules::cosmwasm::CosmWasm;
 use reqwest::blocking::Client;
 use serde_json::json;
 
@@ -10,18 +10,24 @@ const API_URL: &str = "http://127.0.0.1:8080";
 // ICTEST_HOME=./interchaintest local-ic start juno --api-port 8080
 fn main() {    
     let client = Client::new();
-    poll_for_start(client.clone(), &API_URL, 150);
+    poll_for_start(&client.clone(), &API_URL, 150);
 
-    let rb: ChainRequestBuilder = ChainRequestBuilder::new(API_URL.to_string(), "localjuno-1".to_string(), true);
+    let rb: ChainRequestBuilder = match ChainRequestBuilder::new(API_URL.to_string(), "localjuno-1".to_string(), true) {
+        Ok(rb) => rb,
+        Err(err) => {
+            println!("err: {}", err);
+            return;
+        }
+    };
 
     test_cosmwasm(&rb);
 }
 
 fn test_cosmwasm(rb: &ChainRequestBuilder) {
-    let cw = CosmWasm::new(&rb);
+    let mut cw = CosmWasm::new(&rb);
     
     let file_path = get_contract_path().join("ictest_rust.wasm");    
-    let code_id = cw.store_contract("acc0", file_path);    
+    let code_id = cw.store("acc0", &file_path);    
     if code_id.is_err() {        
         panic!("code_id error: {:?}", code_id);
     }    
@@ -32,9 +38,8 @@ fn test_cosmwasm(rb: &ChainRequestBuilder) {
     }
 
     let msg = r#"{"count":0}"#;
-    let res = cw.instantiate_contract(
-        "acc0",
-        code_id,
+    let res = cw.instantiate(
+        "acc0",        
         msg,
         "my-label",
         Some("juno1hj5fveer5cjtn4wd6wstzugjfdxzl0xps73ftl"),
@@ -42,22 +47,14 @@ fn test_cosmwasm(rb: &ChainRequestBuilder) {
     );
     println!("res: {:?}", res);
 
-    let contract = match res {
-        Ok(contract) => contract,
-        Err(err) => {
-            println!("err: {}", err);
-            return;
-        }
-    };
-
-    let prev_res = cw.query_contract(&contract.address, r#"{"get_count":{}}"#);
+    let prev_res = cw.query( r#"{"get_count":{}}"#);
     assert_eq!(prev_res, json!({"data":{"count":0}}));
     println!("prev_res: {}", prev_res);
 
-    let data = cw.execute_contract(&contract.address, "acc0", r#"{"increment":{}}"#, "--gas=auto --gas-adjustment=2.0");
+    let data = cw.execute("acc0", r#"{"increment":{}}"#, "--gas=auto --gas-adjustment=2.0");
     println!("unwrap: {}", data.unwrap());
 
-    let updated_res = cw.query_contract(&contract.address, r#"{"get_count":{}}"#);    
+    let updated_res = cw.query(r#"{"get_count":{}}"#);    
     assert_eq!(updated_res, json!({"data":{"count":1}}));
     println!("updated_res: {}", updated_res);
 }
@@ -68,6 +65,5 @@ fn parent_dir() -> std::path::PathBuf {
 
 // get_contract_path returns the artifacts dire from parent_dir
 fn get_contract_path() -> std::path::PathBuf {
-    let path = parent_dir().join("artifacts");    
-    path
+    parent_dir().join("artifacts")    
 }
