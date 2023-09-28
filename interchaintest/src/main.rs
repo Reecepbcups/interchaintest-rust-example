@@ -1,3 +1,5 @@
+#![allow(unused_must_use)]
+
 use localic_std::modules::cosmwasm::CosmWasm;
 use reqwest::blocking::Client;
 use serde_json::json;
