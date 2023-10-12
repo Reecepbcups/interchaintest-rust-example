@@ -23,7 +23,7 @@ jobs:
         with:
             repository: strangelove-ventures/interchaintest
             path: interchaintest
-            ref: 'reece/rust'
+            # ref: 'reece/rust'
 
       - name: Setup go ${{ env.GO_VERSION }}
         uses: actions/setup-go@v4
