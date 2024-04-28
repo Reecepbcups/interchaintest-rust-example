@@ -12,43 +12,18 @@ concurrency:
 
 env:
     GO_VERSION: 1.21
+    LOCALIC_BIN_URL: https://github.com/strangelove-ventures/interchaintest/releases/download/v8.2.0/local-ic
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    name: build
-    steps:
-      - name: Checkout interchaintest
-        uses: actions/checkout@v4
-        with:
-            repository: strangelove-ventures/interchaintest
-            path: interchaintest
-            # ref: 'reece/rust'
-
-      - name: Setup go ${{ env.GO_VERSION }}
-        uses: actions/setup-go@v4
-        with:
-            go-version: ${{ env.GO_VERSION }}
-
-      - name: build local-interchain        
-        run: cd interchaintest/local-interchain && go mod tidy && make install
-
-      - name: Upload localic artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: local-ic
-          path: ~/go/bin/local-ic  
-
   contract-e2e:
     name: rust e2e
-    needs: build
     runs-on: ubuntu-latest
     # defaults:
     #   run:
     #     working-directory: ./my-path-here
     strategy:
       fail-fast: false
-      
+
     steps:
       - name: checkout this repo (contracts)
         uses: actions/checkout@v3
@@ -59,13 +34,13 @@ jobs:
           profile: minimal
           toolchain: stable
           target: wasm32-unknown-unknown
-          override: true          
+          override: true
 
-      - name: Download Tarball Artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: local-ic
-          path: /tmp
+      - name: Install wget
+        run: sudo apt-get install wget
+
+      - name: Download local-ic
+        run: wget -O /tmp/local-ic ${{ env.LOCALIC_BIN_URL }}
 
       - name: Make local-ic executable
         run: chmod +x /tmp/local-ic
@@ -73,11 +48,11 @@ jobs:
       - name: Compile contract
         run: make compile
 
-      - name: Start background ibc local-interchain        
+      - name: Start background ibc local-interchain
         run: ICTEST_HOME=./interchaintest /tmp/local-ic start juno --api-port 8080 &
-      
+
       - name: Run Rust E2E Script
         run: make run-test
 
-      - name: Cleanup        
+      - name: Cleanup
         run: killall local-ic && exit 0
